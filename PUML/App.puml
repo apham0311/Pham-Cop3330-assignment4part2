@@ -1,0 +1,77 @@
+@startuml
+'https://plantuml.com/sequence-diagram
+
+
+class App
+class Controller
+class Manager
+class list
+class item
+
+
+javafx.ToDoList <|-- App
+
+App -- Controller
+App -- Manager
+App -- list
+App -- item
+
+listManager -- list
+listManager -- item
+
+list -- item
+
+class App {
+main(String [] args)
+start(Stage primaryStage)
+}
+
+class Manager {
++todoLists
++currentList
++getTodo
++getMap
++addTodo
++removeList
++editList
++saveListAll
++loadList
+}
+
+class list {
++getItem
++displayAll
++displayIncomplete
++displayComplete
++saveList
++addItem
++removeItem
+}
+
+class item {
+- description : String
+- dueDate : String
+- status : String
+
++editDescription
++editDate
++completion
+}
+
+class Controller {
++userInputEntered
++textAreaScroll
++addListClick
++removeListClick
++saveAllClick
++editListClick
++addItemClick
++printCompClick
++saveListClick
++removeItemClick
++printIncompClic
++editItemClick
++completeItemClick
++printAllClick
+}
+@endumlefvdswesvfew3f

@@ -1,112 +1,166 @@
+/*
+ *  UCF COP3330 Fall 2021 Assignment 4 Solution
+ *  Copyright 2021 Anh Pham
+ */
 package ucf.assignment;
 
-import javafx.event.ActionEvent;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
-import javafx.scene.control.TextArea;
-import javafx.scene.input.ScrollEvent;
+import javafx.scene.control.DatePicker;
+import javafx.scene.control.ListView;
+import javafx.scene.control.RadioButton;
+import javafx.scene.control.TextField;
+
+import java.time.LocalDate;
+import java.util.ArrayList;
 
 public class Controller {
-    private TextArea textArea;
+    private final ToDoList itemList = new ToDoList();
+    @FXML
+    private ListView<String> toDoListItems;
 
     @FXML
-    public String userInputEntered(ActionEvent actionEvent) {
-
-        return "User input";
-    }
+    private TextField itemDescription;
 
     @FXML
-    public void textAreaScroll(ScrollEvent scrollEvent) {
-        //Let the user have more accessibility with screen through scrolling
-    }
+    private RadioButton isComplete;
 
     @FXML
-    public void addListClick(ActionEvent actionEvent) {
-        // 1)Ask the user info for the list
-        // 2)create list with the neccesary parameters
-        // 3)Add the list to the map
-    }
+    private DatePicker itemDue;
 
     @FXML
-    public void removeListClick(ActionEvent actionEvent) {
-        // 1)Ask the user for the name of list
-        // Remove the list from the map
-    }
+    private RadioButton showCompleteItems;
 
     @FXML
-    public void loadListClick(ActionEvent actionEvent) {
-        // 1)Ask the user if what mode they want
-        // 2)As the user for the file name
-        // 3)load the file into the list
-        // 4) add list to the map
-    }
+    private ListView<String> completeItems;
 
     @FXML
-    public void saveAllClick(ActionEvent actionEvent) {
-        // 1)Ask the user for the file name
-        // 2)Translate it for the code to run
-        // 3)output to file
+    private ListView<LocalDate> toDoListDates;
+
+    //Add item to the list
+    public void addList() {
+        Item item = new Item();
+        item.makeItemDescription(itemDescription.getText());
+        if (itemDue.getValue() != null) {
+            item.makeItemDueDate((itemDue.getValue()));
+        } else {
+            item.makeItemDescription("ERROR, Please Input valid date");
+        }
+        item.makeItemStatus(isComplete.isSelected());
+        itemList.addItem(item);
+        setToDoListItems();
+        resetList();
     }
 
-    @FXML
-    public void editListClick(ActionEvent actionEvent) {
-        // 1)Ask the user what list need to be change
-        // 2)Ask for a new name
-        // 3)Copy the original list with new name
-        // 4)Add the new list to the map
-        // 5)Replace the old list
+    //This will allow list to be open
+    public void openList() {
+        String path = Manager.askOpenFile();
+        ArrayList<String> fileList = Manager.readFile(path);
+        if (!path.equals("")) {
+            for (int i = 0; i < fileList.size(); i++) {
+                Item item = new Item();
+                item.fileToItem(fileList, i);
+                itemList.addItem(item);
+            }
+        }
+        setToDoListItems();
     }
 
-    @FXML
-    public void addItemClick(ActionEvent actionEvent) {
-        // 1)Create new item
-        // 2)Ask user new item info
-        // 3)Add item to list
+    //This will clear item from the list
+    public void clearList() {
+        itemList.clearList();
+        toDoListItems.getItems().clear();
+        completeItems.getItems().clear();
+        toDoListDates.getItems().clear();
+        resetList();
     }
 
-    @FXML
-    public void printCompClick(ActionEvent actionEvent) {
-        // 1)Ask the user what list they want to print
-        // 2)Output
+    //Remove items from the list
+    public void removeList() {
+        //item is removed from the to do list
+        try {
+            if (toDoListItems.getSelectionModel().isEmpty()) {
+                itemList.removeItem(toDoListDates.getSelectionModel().getSelectedIndex());
+
+            } else {
+                itemList.removeItem(toDoListItems.getSelectionModel().getSelectedIndex());
+            }
+
+        } catch (IndexOutOfBoundsException e) {
+            Item item = new Item();
+            item.makeItemDescription("ERROR, Please select item to remove");
+            itemList.addItem(item);
+        }
+        setToDoListItems();
+        resetList();
     }
 
-    @FXML
-    public void saveListClick(ActionEvent actionEvent) {
-        // 1)Ask the user for list they want save
-        // 2)Ask user for the name of file
-        // 3)open file
-        // 4)Write it to the file to be save
+    //Set the status of the item
+    public void setStatus() {
+        if (showCompleteItems.isSelected()) {
+            ObservableList<String> list = FXCollections.observableArrayList(itemList.isComplete());
+            completeItems.setItems(list);
+        } else {
+            ObservableList<String> list = FXCollections.observableArrayList(itemList.isIncomplete());
+            completeItems.setItems(list);
+        }
     }
 
-    @FXML
-    public void removeItemClick(ActionEvent actionEvent) {
-        // Prompt the user for the item and the list
-        // the item resides in
-        // Remove the item from the list
+
+    public void setToDoListItems() {
+        ObservableList<String> titleList = FXCollections.observableArrayList(itemList.getTitles());
+        toDoListItems.setItems(titleList);
+        ObservableList<String> completeList = FXCollections.observableArrayList(itemList.isIncomplete());
+        completeItems.setItems(completeList);
+        ObservableList<LocalDate> dateList = FXCollections.observableArrayList(itemList.getDates());
+        toDoListDates.setItems(dateList);
     }
 
-    @FXML
-    public void printIncompleteClick(ActionEvent actionEvent) {
-        // 1)Ask user what the need to print
-        // 2)output
+    //Reset the list
+    public void resetList() {
+        itemDescription.clear();
+        itemDue.setValue(null);
+        isComplete.setSelected(false);
+        showCompleteItems.setSelected(false);
     }
 
-    @FXML
-    public void editItemClick(ActionEvent actionEvent) {
-        // 1)Ask user that they want to change and location in list
-        // 2)Ask the edit
-        // 3)edit
+    //This will edit the list
+    public void editList() {
+        try {
+            if (!toDoListItems.getSelectionModel().isEmpty()) {
+                itemDescription.setText(toDoListItems.getSelectionModel().getSelectedItem());
+                itemDue.setValue(itemList.getDates().get(toDoListItems.getSelectionModel().getSelectedIndex()));
+                isComplete.setSelected(itemList.getComplete().get(toDoListItems.getSelectionModel().getSelectedIndex()));
+                itemList.removeItem(toDoListItems.getSelectionModel().getSelectedIndex());
+            }
+            if (!toDoListDates.getSelectionModel().isEmpty()) {
+                itemDescription.setText(itemList.getItem(toDoListDates.getSelectionModel().getSelectedIndex()).getItemDescription());
+                itemDue.setValue(itemList.getItem(toDoListDates.getSelectionModel().getSelectedIndex()).getItemDueDate());
+                isComplete.setSelected(itemList.getItem(toDoListDates.getSelectionModel().getSelectedIndex()).getItemStatus());
+                itemList.removeItem(toDoListDates.getSelectionModel().getSelectedIndex());
+            }
+            if (!completeItems.getSelectionModel().isEmpty()) {
+                itemDescription.setText(itemList.getItem(completeItems.getSelectionModel().getSelectedIndex()).getItemDescription());
+                itemDue.setValue(itemList.getItem(completeItems.getSelectionModel().getSelectedIndex()).getItemDueDate());
+                isComplete.setSelected(itemList.getItem(completeItems.getSelectionModel().getSelectedIndex()).getItemStatus());
+                itemList.removeItem(completeItems.getSelectionModel().getSelectedIndex());
+            }
+        } catch (IndexOutOfBoundsException e) {
+            Item item = new Item();
+            item.makeItemDescription("ERROR, Select item to edit");
+            itemList.addItem(item);
+        }
+
+        setToDoListItems();
     }
 
-    @FXML
-    public void completeItemClick(ActionEvent actionEvent) {
-        // 1)Ask user for list and item
-        // 2)make it complete
+    public void saveList() {
+        String path = Manager.askSaveFile();
+        if (!path.equals("")) {
+            Manager.writeFile(path, itemList);
+        }
+
     }
 
-    @FXML
-    public void printAllClick(ActionEvent actionEvent) {
-        // 1)Ask user what they want to print
-        // 2)Output
-    }
-}
 }
