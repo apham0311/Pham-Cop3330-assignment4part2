@@ -15,9 +15,9 @@ class ManagerTest {
         //given
         FileManager fileManager = new FileManager();
         ArrayList<String> expected = new ArrayList<>();
-        expected.add("run a lot  |  Incomplete |  2021-07-23 |");
-        expected.add("poop       |  Complete   |  2021-07-09 |");
-        expected.add("brush face |  Complete   |  2021-07-14 |");
+        expected.add("Date night  |  Incomplete |  2021-05-30 |");
+        expected.add("Pick up food|  Complete   |  2021-11-11 |");
+        expected.add("oil change  |  Complete   |  2021-03-11 |");
         //then
         assertEquals(expected, fileManager.readFromFile("test.txt"));
     }
